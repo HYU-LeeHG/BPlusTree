@@ -134,17 +134,16 @@ public class Main {
 					stdnode.nonleafkeyarr.elementAt(i).lcNode = newnode;
 				}
 				else {
-					return nodeSearch(node.nonleafkeyarr.elementAt(i).lcNode,std);
+					nodeSearch(stdnode.nonleafkeyarr.elementAt(i).lcNode,std,newnode);
 				}
 			}
-			else if(i == node.nonleafkeyarr.size()-1) {
-				if (node.rightNode == null)
-					return node.rightNode;
+			else if(i == stdnode.nonleafkeyarr.size()-1) {
+				if (stdnode.rightNode == null)
+					stdnode.rightNode= newnode;
 				else
-					return nodeSearch(node.rightNode,std);
+					nodeSearch(stdnode.rightNode,std,newnode);
 			}
 		}
-		return node.rightNode;
 	}
 
 	private static void makeDat(String filename, String bnum) {
