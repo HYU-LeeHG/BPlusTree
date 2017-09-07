@@ -44,8 +44,6 @@ public class Main {
 			Tree bptree = new Tree();
 			makeTree(args[1], bptree);
 			getInputfile(args[2],bptree);
-			int c = bptree.root.nonleafkeyarr.elementAt(0).lcNode.nonleafkeyarr.elementAt(0).lcNode.leafkeyarr.elementAt(0).key;
-			System.out.println("20 ? ->"+c);
 			break;
 			
 			
@@ -109,24 +107,25 @@ public class Main {
 		br.readLine();
 		Vector<String> linepack = new Vector<String>();
 		
-		Node newNode ;
+		Node newNode;
 		while((rltmp =  br.readLine())!=null) {
 			linepack.add(rltmp);
 		}
 		for(int r=0; r<linepack.size();r++)
 		{
+			int oldstd =0 ;
 			System.out.println(r+"====");
 			//=======================One line===================================================
 			String[] nodepack = linepack.elementAt(r).split(",");
-			
 			for(int c=0; c<nodepack.length;c++)
 			{	//===================One Node===================================================
+				newNode = new Node(true);
 				System.out.println(c);
 				String[] eachKey = nodepack[c].split(" ");
 				int m = Integer.parseInt(eachKey[0]); //노드의 키 또는 키,값 페어의 수
 				if (eachKey.length -1 >m) { 
 					// =======================leaf node=========================================
-					newNode = new Node(true);
+					
 					for(int n =1; n<m+1 ;n++) {
 						newNode.leafkeyarr.add(new leafPair(Integer.parseInt(eachKey[2*n-1])
 									  						,Integer.parseInt(eachKey[2*n])));
@@ -137,9 +136,14 @@ public class Main {
 					}else {
 						System.out.println("newleaf");
 						int std = newNode.leafkeyarr.elementAt(0).key;
+						if (c!=0) {						//rightNode Link
+							nodeLinkR(bptree.root,oldstd,newNode);
+						}
 						nodeLink(bptree.root,std,newNode);
 						
 					}
+					oldstd = Integer.parseInt(eachKey[1]);
+					System.out.println(oldstd);
 				} else{						
 					// ========================non leaf node====================================
 					newNode = new Node(false);
@@ -169,6 +173,23 @@ public class Main {
 			}
 		}
 		
+		
+	}
+
+	private static void nodeLinkR(Node stdnode, int oldstd, Node newnode) {
+		if (stdnode.isleaf == true) {
+			if (stdnode.leafkeyarr.elementAt(0).key == oldstd)
+				stdnode.rightNode = newnode;
+		}
+		for(int i=0; i<stdnode.nonleafkeyarr.size();i++)
+		{
+			if (oldstd < stdnode.nonleafkeyarr.elementAt(i).key) {			// goto left
+				nodeLinkR(stdnode.nonleafkeyarr.elementAt(i).lcNode,oldstd,newnode);
+			}
+			else if(i == stdnode.nonleafkeyarr.size()-1) {
+				nodeLinkR(stdnode.rightNode,oldstd,newnode);
+			}
+		}
 		
 	}
 
@@ -251,10 +272,11 @@ class Node{
 	Vector<leafPair> leafkeyarr;
 	Vector<nonleafPair> nonleafkeyarr;
 	Node rightNode;	//non-leaf -> right child node ,, leaf ->rightmost node
-	
+	int t;
 	public Node() {
 		leafkeyarr = new Vector<leafPair>();
 		nonleafkeyarr = new Vector<nonleafPair>();
+		t=0;
 	}
 	public Node(boolean leaftest) {
 		isleaf = leaftest;
@@ -264,11 +286,15 @@ class Node{
 		else {
 			nonleafkeyarr = new Vector<nonleafPair>();
 		}
+		t=0;
 	}
 	public Node(Node node) {
 		isleaf = node.isleaf;
 		leafkeyarr = node.leafkeyarr;
 		nonleafkeyarr = node.nonleafkeyarr ;
 		rightNode = node.rightNode;
+	}
+	public Node(int te) {
+		t =te;
 	}
 }
