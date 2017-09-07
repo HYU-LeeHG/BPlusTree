@@ -43,7 +43,9 @@ public class Main {
 			
 			Tree bptree = new Tree();
 			makeTree(args[1], bptree);
-			
+			getInputfile(args[2],bptree);
+			int c = bptree.root.nonleafkeyarr.elementAt(0).lcNode.nonleafkeyarr.elementAt(0).lcNode.leafkeyarr.elementAt(0).key;
+			System.out.println("20 ? ->"+c);
 			break;
 			
 			
@@ -67,6 +69,36 @@ public class Main {
 	
 	}
 
+	private static void getInputfile(String filename, Tree bptree) {
+		//input.csv를 받아서 Tree구조에 넣는 메서드
+		//file readline -> search -> insertion 반복
+		FileReader in = null;
+		try {
+			in = new FileReader(filename);
+			BufferedReader br = new BufferedReader(in);
+			Vector<String> inputpack = new Vector<String>();
+			String rltmp;
+			 while((rltmp = br.readLine())!=null) {
+				 inputpack.add(rltmp);
+			 }
+			 for(int i=0; i<inputpack.size();i++ ) {
+				 String[] kv = inputpack.elementAt(i).split(",");
+				 insertion(Integer.parseInt(kv[0]),Integer.parseInt(kv[1]),bptree);
+			 }
+		} catch(IOException ioe) {
+		} finally {
+			try {
+				in.close();
+			}catch(Exception e) {
+			}
+		}
+		
+	}
+
+	private static void insertion(int key, int value,Tree bptree) {
+		
+	}
+
 	private static void makeTree(String filename, Tree bptree) {
 		String rltmp;//readline temp
 		FileReader in = null;
@@ -77,36 +109,49 @@ public class Main {
 		br.readLine();
 		Vector<String> linepack = new Vector<String>();
 		
-		Node newNode;
+		Node newNode ;
 		while((rltmp =  br.readLine())!=null) {
 			linepack.add(rltmp);
 		}
 		for(int r=0; r<linepack.size();r++)
 		{
+			System.out.println(r+"====");
 			//=======================One line===================================================
 			String[] nodepack = linepack.elementAt(r).split(",");
+			
 			for(int c=0; c<nodepack.length;c++)
 			{	//===================One Node===================================================
 				System.out.println(c);
 				String[] eachKey = nodepack[c].split(" ");
 				int m = Integer.parseInt(eachKey[0]); //노드의 키 또는 키,값 페어의 수
-				if (eachKey.length -1 >m) { // node = leaf
+				if (eachKey.length -1 >m) { 
+					// =======================leaf node=========================================
 					newNode = new Node(true);
 					for(int n =1; n<m+1 ;n++) {
 						newNode.leafkeyarr.add(new leafPair(Integer.parseInt(eachKey[2*n-1])
 									  						,Integer.parseInt(eachKey[2*n])));
 					}
-				} else{						// node = non-leaf
+					if (linepack.size() == 1) { //line = 1 이면 root=leaf
+						bptree.root = newNode;
+					
+					}else {
+						System.out.println("newleaf");
+						int std = newNode.leafkeyarr.elementAt(0).key;
+						nodeLink(bptree.root,std,newNode);
+						
+					}
+				} else{						
+					// ========================non leaf node====================================
 					newNode = new Node(false);
 					for(int n =1;n<m+1;n++) {
 						newNode.nonleafkeyarr.add(new nonleafPair(Integer.parseInt(eachKey[n])
 																  ,null));
 					}
-					if (c==0) { //root case
+					if (r==0) { //root case
 						bptree.root = newNode;
 					} else {
-						int std = newNode.nonleafkeyarr.elementAt(m-1).key;
-						nodeSearch(bptree.root,std,newNode);
+						int std = newNode.nonleafkeyarr.elementAt(0).key;
+						nodeLink(bptree.root,std,newNode);
 					}
 						
 					
@@ -124,24 +169,28 @@ public class Main {
 			}
 		}
 		
+		
 	}
 
-	private static void nodeSearch(Node stdnode, int std, Node newnode) {
+	private static void nodeLink(Node stdnode, int std, Node newnode) {
+
 		for(int i=0; i<stdnode.nonleafkeyarr.size();i++)
 		{
-			if (std < stdnode.nonleafkeyarr.elementAt(i).key) {
+			if (std < stdnode.nonleafkeyarr.elementAt(i).key) {			// goto left
 				if (stdnode.nonleafkeyarr.elementAt(i).lcNode ==null) {
 					stdnode.nonleafkeyarr.elementAt(i).lcNode = newnode;
 				}
 				else {
-					nodeSearch(stdnode.nonleafkeyarr.elementAt(i).lcNode,std,newnode);
+					nodeLink(stdnode.nonleafkeyarr.elementAt(i).lcNode,std,newnode);
+					
 				}
 			}
 			else if(i == stdnode.nonleafkeyarr.size()-1) {
-				if (stdnode.rightNode == null)
-					stdnode.rightNode= newnode;
+				if (stdnode.rightNode == null) {
+					stdnode.rightNode= newnode; 
+				}
 				else
-					nodeSearch(stdnode.rightNode,std,newnode);
+					nodeLink(stdnode.rightNode,std,newnode);
 			}
 		}
 	}
