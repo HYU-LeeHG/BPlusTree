@@ -27,6 +27,7 @@ public class Main {
 
 	public final int MAX = 100;
 	
+	
 	public static void main(String[] args) {
 		Tree bptree = new Tree();
 		switch(args[0]) {//nullpointer exception 추가
@@ -78,14 +79,26 @@ public class Main {
 			 while((rltmp = br.readLine())!=null) {
 				 inputpack.add(rltmp);
 			 }
+
 			 for(int i=0; i<inputpack.size();i++ ) {
 				 Vector<Node> pathNode = new Vector<Node>();
 				 String[] kv = inputpack.elementAt(i).split(",");
-				 if (bptree.root != null)
+				 if (bptree.root != null) {
 					 findPath(Integer.parseInt(kv[0]),bptree.root, pathNode);
-				 System.out.println("START"+kv[0]+"========");
+				 }
+
+				 System.out.println("====="+kv[0]+"'s path======");
+				 for(int k =0; k<pathNode.size();k++) {
+					 System.out.println(k+"//"+pathNode.size());
+					 if (k!=pathNode.size()-1)
+						 System.out.println(pathNode.elementAt(k).nonleafkeyarr.elementAt(0).key);
+					 else
+						 System.out.println(pathNode.elementAt(k).leafkeyarr.elementAt(0).key);
+					 
+				 }
+				 
 				 insertion(Integer.parseInt(kv[0]),Integer.parseInt(kv[1]),bptree,pathNode);
-				 System.out.println("END"+kv[0]+"========");
+				 System.out.println("=======================");
 			 }
 		} catch(IOException ioe) {
 		} finally {
@@ -98,13 +111,19 @@ public class Main {
 	}
 
 	private static void findPath(int key, Node node, Vector<Node> pathNode) {
+		
 		pathNode.add(node);				// method가 leaf노드에 도착하면 leaf노드를 path에 추가하고 method 종료
-		if (node.isleaf == false)		// 아니라면 다음 path를 찾음 	
-		{					
-			for(int i=0; i<node.nonleafkeyarr.size();i++)
+		
+		if (!(node.isleaf))		// 아니라면 다음 path를 찾음 	
+		{	
+			
+			int ns = node.nonleafkeyarr.size();
+			out:
+			for(int i=0; i<ns;i++)
 			{
 				if (key < node.nonleafkeyarr.elementAt(i).key) {			// goto left
 					findPath(key, node.nonleafkeyarr.elementAt(i).lcNode,pathNode);
+					break out;
 				}
 				else if(i == node.nonleafkeyarr.size()-1) {
 					findPath(key, node.rightNode, pathNode);
@@ -112,7 +131,7 @@ public class Main {
 			}			
 		}
 	}
-
+	//86,,siz =2
 	private static void insertion(int key, int value, Tree bptree, Vector<Node> pathnode) {
 		
 		int i=pathnode.size()-1;			// leaf node (path의 제일 끝은 리프노드)
@@ -123,26 +142,38 @@ public class Main {
 			bptree.root = newRoot;
 		}	
 		else{
-			for(int j=0; j<pathnode.elementAt(i).leafkeyarr.size();j++) {
-				if(key < pathnode.elementAt(i).leafkeyarr.elementAt(j).key)
+			int ns = pathnode.elementAt(i).leafkeyarr.size();
+			out:
+			for(int j=0; j<ns;j++) {
+				if(key < pathnode.elementAt(i).leafkeyarr.elementAt(j).key) {
 					pathnode.elementAt(i).leafkeyarr.add(j,new leafPair(key,value));
-				else if(j == pathnode.elementAt(i).leafkeyarr.size()-1)
+					break out;
+				}
+				else if(j == pathnode.elementAt(i).leafkeyarr.size()-1) {
 					pathnode.elementAt(i).leafkeyarr.add(new leafPair(key,value));
+				}
 			}
 			if (pathnode.elementAt(i).leafkeyarr.size() >= bptree.m) {
 				int mid = pathnode.elementAt(i).leafkeyarr.elementAt(bptree.m/2).key; //중간값
+				
+				System.out.println(key+" needs ofc, mid is ->"+mid);
 				overflowCtrl(true, mid,pathnode,i,bptree);
-			
+				
+				
 			}
 			
-		}	
+		}
+		
 		
 	}
 	private static boolean insertPair(nonleafPair newpair,Node target) {
-		for(int i =0; i<target.nonleafkeyarr.size();i++)
+		int ns = target.nonleafkeyarr.size();
+		out:
+		for(int i =0; i<ns;i++)
 		{
 			if (newpair.key < target.nonleafkeyarr.elementAt(i).key) {
 				target.nonleafkeyarr.add(i,newpair);
+				break out;
 				
 			}
 			else if (i == target.nonleafkeyarr.size()-1) {
@@ -150,34 +181,44 @@ public class Main {
 			}
 		}
 		if (target.nonleafkeyarr.size()>=target.m)
-			return false;			//부모노드도 오버플로우
+			return false;			//pair를 넣었을 때 오버플로우
 		else
-			return true;			//부모노드 오버플로우 안일어남
+			return true;			//오버플로우 안일어남
 	}
   
 	private static void overflowCtrl(boolean isleaf, int mid, Vector<Node> pathnode, int nodeidx,Tree bptree) {
 		int m = bptree.m;
 		Node newChild = new Node(m);
-		Node newParent = new Node(m);
+		Node newParent = new Node(m,false);
 		nonleafPair newPair = new nonleafPair(mid, new Node(m));
+		
+		System.out.println("mid = " + mid + "  nodeidx= "+nodeidx);
 		if (isleaf) {			//leaf에서의 오버플로우
 			for(int i = 0; i< m/2;i++) {	//split시 중간 이전값으로 구성된 새로운 childnode를 만듬
+				
 				int newKey = pathnode.elementAt(nodeidx).leafkeyarr.elementAt(0).key;
+				System.out.println("case1 : "+ newKey);
 				int newValue = pathnode.elementAt(nodeidx).leafkeyarr.elementAt(0).value;
 				newChild.leafkeyarr.add(new leafPair(newKey,newValue));
+				newChild.isleaf = true;
 				pathnode.elementAt(nodeidx).leafkeyarr.remove(0);
 			}
+			newChild.rightNode = pathnode.elementAt(nodeidx);	//새 리프노드랑 기존 리프노드랑 연결
 			if(nodeidx == 0) {		// leaf == root인 상황에서 오버플로우
+				System.out.println("case2");
 				newParent.nonleafkeyarr.add(new nonleafPair(mid, newChild));
 				newParent.rightNode = pathnode.elementAt(nodeidx);
 				bptree.root = newParent;
+				
 			}else {					// leaf != root
+				System.out.println("case3");
 				newPair.lcNode = newChild;
 				if(!(insertPair(newPair, pathnode.elementAt(nodeidx-1)))) {	//pair를 노드에 넣었는데 오버플로우라면 재귀
 					int newmid = pathnode.elementAt(nodeidx-1).nonleafkeyarr.elementAt(m/2).key;
 					overflowCtrl(false,newmid,pathnode,nodeidx-1,bptree);
 				}
 			}
+			
 		}
 		else {					//non leaf에서의 오버플로우
 			for(int i = 0; i< m/2;i++) {	//split시 중간 이전값으로 구성된 새로운 childnode를 만듬 + 중간값 제거
@@ -187,11 +228,13 @@ public class Main {
 			}
 			pathnode.elementAt(nodeidx).nonleafkeyarr.remove(0);
 			if(nodeidx == 0) {		//root인 상황에서 오버플로우
+				System.out.println("case4");
 				newParent.nonleafkeyarr.add(new nonleafPair(mid, newChild));
 				newParent.rightNode = pathnode.elementAt(nodeidx);
 				bptree.root = newParent;
 			}else {					// nonleaf노드가 root가 아닌 상황에서의 오버플로우
 				newPair.lcNode = newChild;
+				System.out.println("case5");
 				if(!(insertPair(newPair, pathnode.elementAt(nodeidx-1)))) {	//pair를 노드에 넣었는데 오버플로우라면 재귀
 					int newmid = pathnode.elementAt(nodeidx-1).nonleafkeyarr.elementAt(m/2).key;
 					overflowCtrl(false,newmid,pathnode,nodeidx-1,bptree);
@@ -340,22 +383,13 @@ public class Main {
 		
 	}
 	private static void Test(String filename) {
-		FileReader in = null;
-		try {
-		in = new FileReader(filename);
-		BufferedReader br = new BufferedReader(in);
-		System.out.println(Character.getNumericValue(in.read()));
-		System.out.println(br.readLine());
-		System.out.println(br.readLine());
-		System.out.println(br.readLine());
-		}catch(IOException ioe){
-			
-		} finally {
-			try {
-				in.close();
-			}catch(Exception e) {
-			}
-		}
+		Vector<String> tint = new Vector<String>();
+		tint.add("a");
+		tint.add("b");
+		tint.add("C");
+		tint.add(0,"d");
+		
+
 	}
 	
 	
@@ -404,6 +438,12 @@ class Node{
 	}
 	public Node (int pm) {
 		m = pm;
+		leafkeyarr = new Vector<leafPair>();
+		nonleafkeyarr = new Vector<nonleafPair>();
+	}
+	public Node (int pm, boolean il) {
+		m = pm;
+		isleaf = il;
 		leafkeyarr = new Vector<leafPair>();
 		nonleafkeyarr = new Vector<nonleafPair>();
 	}
