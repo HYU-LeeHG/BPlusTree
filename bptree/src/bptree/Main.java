@@ -42,7 +42,9 @@ public class Main {
 		case "-i": // -i index.dat input.csv
 			System.out.println("insertion");
 			makeTree(args[1], bptree);
+			System.out.println("!!!!!!!!!!!! :" + bptree.m);
 			getInputfile(args[2],bptree);
+			saveTree(bptree,args[1]);
 			break;
 			
 			
@@ -67,6 +69,66 @@ public class Main {
 	
 	}
 
+	private static void saveTree(Tree bptree, String filename) {
+		FileWriter out = null;
+		try {
+		out = new FileWriter("C:/Users/Lee/eclipse-workspace/bptree/"+filename);
+		out.write(String.valueOf(bptree.m) + "\n");
+		Vector<Node> nextDepth = new Vector<Node>();
+		nextDepth.add(bptree.root);
+		findNextDepth(out, nextDepth);
+	
+		} catch(IOException ioe) {
+		} finally {
+			try {
+				out.close();
+			}catch(Exception e) {
+			}
+		}
+		
+	}
+
+	private static void findNextDepth(FileWriter out, Vector<Node> curDepth) throws IOException {
+		//curDepth -> 현재 뎁스
+		//nextDepth -> 현재 뎁스 자식들의 뎁스
+		try {
+			int vs = curDepth.size();	//현재 뎁스의 노드 갯수
+			if(curDepth.elementAt(0).isleaf) {
+				for(int i=0;i<vs;i++) {
+					out.write(curDepth.elementAt(i).size());
+					for(int j=0; j<curDepth.elementAt(i).size();j++) {
+						System.out.println(" " + String.valueOf(curDepth.elementAt(i).leafkeyarr.elementAt(j).key) + 
+								  " " + String.valueOf(curDepth.elementAt(i).leafkeyarr.elementAt(j).value));
+						out.write(" " + String.valueOf(curDepth.elementAt(i).leafkeyarr.elementAt(j).key) + 
+								  " " + String.valueOf(curDepth.elementAt(i).leafkeyarr.elementAt(j).value));
+					}
+					if(i != vs-1)
+						out.write(",");
+				}
+				out.write("\n");
+			}
+			else {
+				Vector<Node> nextDepth = new Vector<Node>();
+				for(int i=0;i<vs;i++) {
+					out.write(curDepth.elementAt(i).size());
+					for(int j=0; j<curDepth.elementAt(i).size();j++) {
+						System.out.println(String.valueOf(curDepth.elementAt(i).nonleafkeyarr.elementAt(j).key));
+						out.write(" " + String.valueOf(curDepth.elementAt(i).nonleafkeyarr.elementAt(j).key));
+						nextDepth.add(curDepth.elementAt(i).nonleafkeyarr.elementAt(j).lcNode);
+					}
+					if(i != vs-1)
+						out.write(",");
+					nextDepth.add(curDepth.elementAt(i).rightNode);
+				}
+				out.write("\n");
+				findNextDepth(out, nextDepth);
+			}
+		} catch(NullPointerException npe) {
+			
+		}
+		
+	}
+
 	private static void getInputfile(String filename, Tree bptree) {
 		//input.csv를 받아서 Tree구조에 넣는 메서드
 		//file readline -> search -> insertion 반복
@@ -87,15 +149,6 @@ public class Main {
 					 findPath(Integer.parseInt(kv[0]),bptree.root, pathNode);
 				 }
 
-				 System.out.println("====="+kv[0]+"'s path======");
-				 for(int k =0; k<pathNode.size();k++) {
-					 System.out.println(k+"//"+pathNode.size());
-					 if (k!=pathNode.size()-1)
-						 System.out.println(pathNode.elementAt(k).nonleafkeyarr.elementAt(0).key);
-					 else
-						 System.out.println(pathNode.elementAt(k).leafkeyarr.elementAt(0).key);
-					 
-				 }
 				 
 				 insertion(Integer.parseInt(kv[0]),Integer.parseInt(kv[1]),bptree,pathNode);
 				 System.out.println("=======================");
@@ -251,6 +304,7 @@ public class Main {
 		in = new FileReader("C:/Users/Lee/eclipse-workspace/bptree/"+filename);
 		BufferedReader br = new BufferedReader(in);
 		bptree.m = Character.getNumericValue(in.read());
+		System.out.println("????????: " + bptree.m);
 		br.readLine();
 		Vector<String> linepack = new Vector<String>();
 		
@@ -383,11 +437,17 @@ public class Main {
 		
 	}
 	private static void Test(String filename) {
-		Vector<String> tint = new Vector<String>();
-		tint.add("a");
-		tint.add("b");
-		tint.add("C");
-		tint.add(0,"d");
+		FileWriter out = null;
+		try {
+		out = new FileWriter("C:/Users/Lee/eclipse-workspace/bptree/"+filename);;
+		out.write(String.valueOf(123415));
+		} catch(IOException ioe) {
+		} finally {
+			try {
+				out.close();
+			}catch(Exception e) {
+			}
+		}
 		
 
 	}
